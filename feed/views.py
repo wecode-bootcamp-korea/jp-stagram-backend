@@ -36,9 +36,10 @@ class FeedView(View):  # returns all instagram feeds on main page
 class CommentView(View):
     @login_decorator
     def get(self, request):
-        user = request.user
-        feed = user.feed_set.get(pk=2)
-        feed_comments = list(feed.comments.all())
+        # user = request.user
+        # feed = user.feed_set.get(pk=2)
+        # feed_comments = list(feed.comments.all())
+        feed_comments = list(Comment.objects.all())
         all_comments = []
         for comment in feed_comments:
             comment_values = {}
@@ -61,6 +62,7 @@ class CommentView(View):
         user = request.user
         data = json.loads(request.body)
         try:
+            """
             new_comment = Comment(
                 feed=Feed.objects.get(id=data['feed_id']),
                 account=user,
@@ -74,7 +76,16 @@ class CommentView(View):
                 comment_values['username'] = comment.account.username
                 comment_values['content'] = comment.content
                 all_comments.append(comment_values)
-
+            """
+            Comment.objects.create(feed=Feed.objects.get(
+                id=data['feed_id']), account=user, content=data['text'])
+            comments = list(Comment.objects.all())
+            all_comments = []
+            for comment in comments:
+                comment_values = {}
+                comment_values['username'] = comment.account.username
+                comment_values['content'] = comment.content
+                all_comments.append(comment_values)
             return JsonResponse({'comments': all_comments}, status=200)
         except KeyError:
             return JsonResponse({'message': 'INVALID_KEY'}, status=400)
